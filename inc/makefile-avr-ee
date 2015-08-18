@@ -1,0 +1,97 @@
+#
+#	makefile-avr-ee
+#
+#	© 2013 Janusz Kostorz (janusz.kostorz@gmail.com)
+#
+#	Wersja: 1.130503
+#
+
+#	Ustawienia zależne od projektu...
+
+#	# Konfiguracja programatora
+#	HARDWARE = usbasp
+#	SLOWSCK = 1
+#
+#	# Konfiguracja sprzętu
+#	MCU = attiny2313
+#	F_CPU = 4000000
+#
+#	EEPROM = eeprom
+#
+#	LFUSE = 0xDC
+#	HFUSE = 0xDF
+#	EFUSE = 0xFF
+#
+#	LOCK = 0x3F
+#
+#	# Konfiguracja optymalizacji kodu
+#	OPTIMIZE = s
+#
+#	# Konfiguracja kompilatora
+#	PROG = main
+#	OBJ = main.o
+#	DEFS =
+#	LIBS =
+#	CC = @avr-gcc
+#
+#	include ../../include/makefile-avr-ee
+#
+
+# Opcje kompilatora
+override CFLAGS = -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -fno-unit-at-a-time -Wundef -Wunreachable-code -Wsign-compare -DF_CPU=$(F_CPU)UL -O$(OPTIMIZE) -mmcu=$(MCU) $(DEFS)
+override LDFLAGS = -Wl,-Map,$(PROG).map
+
+OBJCOPY = @avr-objcopy
+OBJDUMP = @avr-objdump
+
+# Kompilacja - C
+all: clean $(PROG).elf lst bin eeprom size
+
+$(PROG).elf: $(OBJ)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+lst:  $(PROG).lst
+
+%.lst: %.elf
+	$(OBJDUMP) -h -S $< > $@
+
+bin:  $(PROG).bin
+
+%.bin: %.elf
+	$(OBJCOPY) -j .text -j .data -O binary $< $@
+
+size: ${PROG}
+	@echo
+	@echo -n "\tFLASH size - "
+	@avr-size -A -t  --target=binary ${PROG}.bin | grep Total | cut -d " " -f 4
+	@echo -n "\tEEPROM size - "
+	@avr-size -A -t  --target=binary ${EEPROM}.bin | grep Total | cut -d " " -f 4
+	@rm -rf $(PROG)
+	@echo
+
+# Budowanie pliku eeprom
+eeprom: $(PROG).elf
+	$(OBJCOPY) -j .eeprom --change-section-lma .eeprom=0 -O binary $< $@.bin
+
+# Usuwanie plików tymczasowych
+clean:
+	@rm -rf *.elf *.lst *.map *.o
+
+#Obsługa programatora
+lfuse:
+	@avrdude -p $(MCU) -c $(HARDWARE) -B $(SLOWSCK) -q -U lfuse:w:$(LFUSE):m
+
+hfuse:
+	@avrdude -p $(MCU) -c $(HARDWARE) -B $(SLOWSCK) -q -U hfuse:w:$(HFUSE):m
+
+efuse:
+	@avrdude -p $(MCU) -c $(HARDWARE) -B $(SLOWSCK) -q -U efuse:w:$(EFUSE):m
+
+lock:
+	@avrdude -p $(MCU) -c $(HARDWARE) -B $(SLOWSCK) -q -U lock:w:$(LOCK):m
+
+burn:
+	@avrdude -p $(MCU) -c $(HARDWARE) -B $(SLOWSCK) -q -e -U flash:w:$(PROG).bin:r
+
+ee:
+	@avrdude -p $(MCU) -c $(HARDWARE) -B $(SLOWSCK) -q -e -U eeprom:w:$(EEPROM).bin:r
