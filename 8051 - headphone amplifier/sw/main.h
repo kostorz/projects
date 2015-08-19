@@ -2,7 +2,7 @@
 
 	BSD license
 
-	© 2013 Janusz Kostorz (janusz.kostorz@gmail.com)
+	© 2015 Janusz Kostorz (janusz.kostorz@gmail.com)
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -96,9 +96,9 @@
 	#define REL_SUPPLY_PORT				PORTC
 	#define REL_SUPPLY_IO					( 1 << 0 )
 
-	#define REL_HEADPHONES_DIRECTION			DDRC
-	#define REL_HEADPHONES_PORT					PORTC
-	#define REL_HEADPHONES_IO					( 1 << 1 )
+	#define REL_HEADPHONES_DIRECTION		DDRC
+	#define REL_HEADPHONES_PORT			PORTC
+	#define REL_HEADPHONES_IO				( 1 << 1 )
 
 	#define LED_MUTE_DIRECTION			DDRC
 	#define LED_MUTE_PORT					PORTC

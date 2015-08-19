@@ -16385,7 +16385,7 @@ End of BSD license</text>
 <sheets>
 <sheet>
 <plain>
-<text x="-2.54" y="0" size="1.016" layer="97">K8051 - Headphones Amplifier - SCH 2015.03.26 / BRD 2015.03.26</text>
+<text x="-2.54" y="0" size="1.016" layer="97">K8051 - Headphone Amplifier - SCH 2015.08.19 / BRD 2015.08.19</text>
 <wire x1="147.32" y1="118.11" x2="147.32" y2="254" width="0.0762" layer="97" style="shortdash"/>
 <wire x1="147.32" y1="254" x2="347.98" y2="254" width="0.0762" layer="97" style="shortdash"/>
 <wire x1="347.98" y1="254" x2="347.98" y2="236.22" width="0.0762" layer="97" style="shortdash"/>
