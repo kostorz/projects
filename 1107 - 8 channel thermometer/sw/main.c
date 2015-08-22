@@ -20,7 +20,7 @@
  */
 
 #define SW_NAME		"K1107"			// nazwa programu - 5 znaków
-#define SW_VERSION	"1.1500822"		// wersja programu - 8 znaków
+#define SW_VERSION	"1.150822"		// wersja programu - 8 znaków
 #define SW_YEAR		"2015"			// rok wydania programu - 4 znaki
 
 /*
