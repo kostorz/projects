@@ -20,10 +20,13 @@
  */
 
 #define SW_NAME		"K1107"			// nazwa programu - 5 znaków
-#define SW_VERSION	"1.150330"		// wersja programu - 8 znaków
+#define SW_VERSION	"1.1500822"		// wersja programu - 8 znaków
 #define SW_YEAR		"2015"			// rok wydania programu - 4 znaki
 
 /*
+ * 
+ * 	1.150822:
+ * 		- dostosowanie kodu do zmian w onewire.h;
  * 
  *	0.150405:
  *		- reaktywacja projektu;
@@ -144,7 +147,7 @@ int main(void){
 
 		// Pomiar temperatury
 		ow_write(OW_0x28_CONVERT_T, bRom);
-		ow_wait_ms(OW_0x28_CONVERT_T_TIME_12BIT);
+		wait_ms(OW_0x28_CONVERT_T_TIME_12BIT);
 		ow_write(OW_0x28_READ_SCRATCHPAD, bRom);
 		uint8_t i;
 		for(i = 0; i < OW_0x28_SCRATCHPAD_SIZE; i++)

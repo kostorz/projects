@@ -1,30 +1,38 @@
 /*
+*
+*	onewire/onewire.h
+*
+*	BSD licence
+*
+*	© 2015 Janusz Kostorz (janusz.kostorz@gmail.com)
+*	All rights reserved.
+*
+*	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+*		1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+*		2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+*		3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
+*
+*	THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+*	IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+*	End of BSD licence
+*
+*/
 
-	onewire/onewire.h
-
-	BSD licence
-
-	© 2012 Janusz Kostorz (janusz.kostorz@gmail.com)
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-		1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-		2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-		3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
-
-	THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-	IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-	End of BSD licence
-
-	1.121125:
-		- poprawki komentarzy
-	1.121114:
-		- zmieniono nazwę folderu w celu lepszego podziału rodzin mikrokontrolerów
-		- ustanowiono licencję BSD
-
-	1.090401:
-		- pierwsza wersja publiczna
+/*
+*	1.150822:
+*		- optymalizacja kodu;
+*
+*	1.121125:
+*		- poprawki komentarzy;
+*
+*	1.121114:
+*		- zmieniono nazwę folderu w celu lepszego podziału rodzin mikrokontrolerów;
+*		- ustanowiono licencję BSD;
+*
+*	1.090401:
+*		- pierwsza wersja publiczna;
+* 
 */
 
 /*
@@ -59,6 +67,8 @@ while(1){
 */
 
 #include <avr/interrupt.h>
+
+#include "../avr-asm/wait.h"
 
 // Dołączenie definicji elementów 1wire
 #include "./01.h"
@@ -153,31 +163,6 @@ while(1){
 		OW_DDR	|= 1 << OW_PIN;\
 	}
 
-	// Private - do not use outside this file
-	static inline void asm_ow_wait_us(uint16_t count){\
-		asm volatile ("cp %A0, __zero_reg__	\n\t"\
-			"cpc %B0, __zero_reg__		\n\t"\
-			"breq loop_out_%=		\n\t"\
-			"loop%=:			\n\t"\
-			"sbiw %0, 1			\n\t"\
-			"brne loop%=			\n\t"\
-			"loop_out_%=:			\n\t"\
-			: "=w" (count)
-			: "0" (count)
-		);
-	}
-	#define ow_wait_us(us) asm_ow_wait_us((uint16_t)(((((us) * 1000L) / (1000000000 / F_CPU)) - 1) / 4))
-
-	// Pętla czasowa
-	void ow_wait_ms(uint16_t time){
-		while (time--){
-			ow_wait_us(1000);
-			#if defined(_AVR_WDT_H_)
-			wdt_reset();
-			#endif
-		}
-	}
-
 	// Send reset to 1wire device(s)and get 0 if everything is ok, or OW_SHORT_CIRCUIT / OW_NO_DEVICE if error
 	#define OW_SHORT_CIRCUIT	1
 	#define OW_NO_DEVICE		2
@@ -185,16 +170,16 @@ while(1){
 		uint8_t err = 0, sreg;
 		sreg = SREG;
 		cli();
-		ow_wait_us(OW_TIME_G);
+		wait_us(OW_TIME_G);
 		OW_PORT &= ~(1 << OW_PIN);	//0
 		OW_DDR |= 1 << OW_PIN;	//out
-		ow_wait_us(OW_TIME_H);	// wait 480us
+		wait_us(OW_TIME_H);	// wait 480us
 		OW_PORT |= 1 << OW_PIN;	//1
 		OW_DDR &= ~(1 << OW_PIN);	// in
-		ow_wait_us(OW_TIME_I);		// wait 70us
+		wait_us(OW_TIME_I);		// wait 70us
 		if (OW_PORTIN & (1 << OW_PIN))	// if 1 no device
 			err = OW_NO_DEVICE;
-		ow_wait_us(OW_TIME_J);	// wait 410us
+		wait_us(OW_TIME_J);	// wait 410us
 		err = (OW_PORTIN & (1 << OW_PIN)) ? err : OW_SHORT_CIRCUIT;
 		SREG = sreg;
 		return err;
@@ -207,17 +192,17 @@ while(1){
 		cli();
 		OW_PORT &= ~(1 << OW_PIN);	//0
 		OW_DDR |= 1 << OW_PIN;
-		ow_wait_us(OW_TIME_A);
+		wait_us(OW_TIME_A);
 		if (bit){
 			OW_PORT |= 1 << OW_PIN;	//1
 			OW_DDR &= ~(1 << OW_PIN );
 		}
-		ow_wait_us(OW_TIME_E);
+		wait_us(OW_TIME_E);
 		bit = (OW_PORTIN & (1 << OW_PIN));
-		ow_wait_us(OW_TIME_C - OW_TIME_E);
+		wait_us(OW_TIME_C - OW_TIME_E);
 		OW_PORT |= 1 << OW_PIN;	//1
 		OW_DDR &= ~(1 << OW_PIN );
-		ow_wait_us(OW_TIME_D);
+		wait_us(OW_TIME_D);
 		SREG = sreg;
 		return bit;
 	}
