@@ -1,6 +1,6 @@
 /*
  * 
- *	K-251 - tester elementów elektronicznych
+ *	K1107 - termometr ośmiokanałowy
  * 
  *	BSD license
  * 
