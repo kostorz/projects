@@ -1,50 +1,57 @@
 /*
-
-	K-8051 - wzmacniacz słuchawkowy
-
-	BSD license
-
-	© 2015 Janusz Kostorz (janusz.kostorz@gmail.com)
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-		1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-		2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-		3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
-
-	THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-	IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-	End of BSD license
-
+* 
+* K8051 - wzmacniacz słuchawkowy
+*
+* BSD license
+*
+* © 2015 Janusz Kostorz (janusz.kostorz@gmail.com)
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+*	1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+*	2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+*	3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+* IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+* End of BSD license
+*
 */
 
 #define SW_NAME			"K8051"			// nazwa programu
-#define SW_VERSION		"1.150811"		// wersja programu
+#define SW_VERSION		"1.151011"		// wersja programu
 
 #define USART_BAUD		38400			// szybkość transmisji danych przez port szeregowy
 
 /*
-
-	1.150811:
-		- funkcjonalność...
-			- sygnalizacja - dioda POWER - słabe świecenie w trybie czuwania, pełne świecenie w trybie pracy;
-			- sygnalizacja - dioda FUNC - świecenie przy dużym wzmocnieniu, sygnalizacja wystąpienia błędu;
-			- sygnalizacja - dioda MUTE - świecenie przy wyciszeniu -115,5dB lub całkowitym odłączeniu od słuchawek;
-			- włączenie / wyłączenie przyciskiem POWER, płynne zwiększanie wzmocnienia do ustalonej wartości;
-			- wyciszenie przyciskiem POWER;
-			- regulacja wzmocnienia enkoderem;
-			- ograniczenie maksymalnego wzmocnienia do ustalonej wartości, dalsze zwiększanie możliwe w połączeniu z przyciskiem FUNC;
-			- zabezpieczenie przed włączeniem bez podłączonych słuchawek - przejście do stanu czuwania;
-			- zabezpieczenie przed zanikiem napięcia zasilania toru analogowego - wyłączenie przekaźnika zasilacza, odłączenie słuchawek, zapętlenie wymagające odłączenia napięcia sieciowego;
-		- zwielokrotnione wysyłanie komend do potencjometrów ze względu na wysokie ryzyko wystąpienia błędów transmisji spowodowanych opóźnieniami transoptorów;
-		- obsługa portu szeregowego (38400 8n1) - wysyłanie informacji o działaniu oprogramowania wzmacniacza;
-		- rejestrowanie czasu pracy wzmacniacza w pamięci eeprom, niezależnie dla części cyfrowej i analogowej;
-
-	TODO:
-		- obsługa sterowania przez port podczerwieni;
-		- optymalizacja kodu w celu zminimalizowania ryzyka wystąpienia błędu;
-
+* 
+* 1.151011:
+* 	- dodano funkcję zapamiętywania wartości wzmocnienia w pamięci eeprom;
+* 	- część kodu odpowiedzialną za pomiar czasu propagacji transoptorów przeniesiono do opcji kompilatora DEBUG;
+* 	- usunięcie błędów w kodzie...
+* 		- nieprawidłowa wielkość zmiennej adresu w pamięci eeprom w funkcjach zapisu i odczytu;
+* 	- optymalizacja kodu...
+* 		- wysyłanie informacji do portu szeregowego;
+*
+* 1.150811:
+*	- funkcjonalność...
+*		- sygnalizacja - dioda POWER - słabe świecenie w trybie czuwania, pełne świecenie w trybie pracy;
+*		- sygnalizacja - dioda FUNC - świecenie przy dużym wzmocnieniu, sygnalizacja wystąpienia błędu;
+*		- sygnalizacja - dioda MUTE - świecenie przy wyciszeniu -115,5dB lub całkowitym odłączeniu od słuchawek;
+*		- włączenie / wyłączenie przyciskiem POWER, płynne zwiększanie wzmocnienia do ustalonej wartości;
+*		- wyciszenie przyciskiem POWER;
+*		- regulacja wzmocnienia enkoderem;
+*		- ograniczenie maksymalnego wzmocnienia do ustalonej wartości, dalsze zwiększanie możliwe w połączeniu z przyciskiem FUNC;
+*		- zabezpieczenie przed włączeniem bez podłączonych słuchawek - przejście do stanu czuwania;
+*		- zabezpieczenie przed zanikiem napięcia zasilania toru analogowego - wyłączenie przekaźnika zasilacza, odłączenie słuchawek, zapętlenie wymagające odłączenia napięcia sieciowego;
+*	- zwielokrotnione wysyłanie komend do potencjometrów ze względu na wysokie ryzyko wystąpienia błędów transmisji spowodowanych opóźnieniami transoptorów;
+*	- obsługa portu szeregowego (38400 8n1) - wysyłanie informacji o działaniu oprogramowania wzmacniacza;
+*	- rejestrowanie czasu pracy wzmacniacza w pamięci eeprom, niezależnie dla części cyfrowej i analogowej;
+*
+* TODO:
+*	- obsługa sterowania przez port podczerwieni;
+*
 */
 
 #include <avr/eeprom.h>
@@ -59,7 +66,7 @@
 #include "main.h"
 
 int16_t main ( void ) {
-
+	
 	// Uruchowienie watchdog z czasem czuwania 15ms
 	wdt_reset( );
 	wdt_enable( WDTO_15MS );
@@ -78,7 +85,7 @@ int16_t main ( void ) {
 	PORTB |= LED_POWER_IO;
 	PORTC |= REL_HEADPHONES_IO | LED_MUTE_IO | LED_FUNC_IO;
 	PORTD |= IC_DATAW_IO | IC_LEFT_IO | IC_RIGHT_IO;
-	
+
 	// Ustawienie transmisji przez port szeregowy, wysłanie powitania
 	UBRR0H = UBRRH;
 	UBRR0L = UBRRL;
@@ -112,12 +119,12 @@ int16_t main ( void ) {
 
 	// Odczekanie na zwolnienie przycisku - zabezpieczenie przed ponownym uruchomieniem podczas wyłączania
 	while( !( SWITCH_POWER_PIN & SWITCH_POWER_IO ) )
-		wdt_reset();
+		wdt_reset( );
 
 	// Globalne uruchomienie przerwań
-	sei();
+	sei( );
 
-	// Stan czuwania
+	// Tryb gotowości - oczekiwanie na naciśnięcie przycisku POWER, sterowanie diodą POWER w trybie PWM
 	func_serial_sendstring( 1, PSTR( "\e[0;32mMicrocontroler - standby mode, ready to startup\n\r" ) );
 	uint8_t b = 0;
 	while( 1 ) {
@@ -137,7 +144,7 @@ int16_t main ( void ) {
 		wait_ms( 1 );
 	}
 
-	// Uruchomienie - sygnalizacja
+	// Włączenie diod POWER i MUTE
 	LED_POWER_PORT &= ~LED_POWER_IO;
 	LED_MUTE_PORT &= ~LED_MUTE_IO;
 
@@ -157,12 +164,12 @@ int16_t main ( void ) {
 
 	}
 
-	// Odczekanie na zwolnienie przycisków
+	// Oczekiwanie na zwolnienie przycisków
 	while( !( SWITCH_POWER_PIN & SWITCH_POWER_IO ) || !( SWITCH_FUNC_PIN & SWITCH_FUNC_IO ) )
-		wdt_reset();
+		wdt_reset( );
 
 	// Ustawienie na wszystkich wejściach cyfrowych potencjometrów stanu niskiego (opis w dokumentacji WM8816)
-	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - set low state on all digital pins\n\r" ) );
+	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - set low state on all digital pins\n\r" ) );
 
 	IC_CLOCK_PORT &= ~IC_CLOCK_IO;
 	IC_DATAW_PORT &= ~IC_DATAW_IO;
@@ -180,34 +187,31 @@ int16_t main ( void ) {
 		// Odłączenie zasilania części analogowej (słuchawki nie zostały na tym etapie programu podłączone)
 		REL_SUPPLY_PORT &= ~REL_SUPPLY_IO;
 
-		// Wyłączenie diody POWER
+		// Wyłączenie diod POWER i MUTE
 		LED_POWER_PORT |= LED_POWER_IO;
+		LED_MUTE_PORT |= LED_MUTE_IO;
 
-		// Włączenie diod FUNC i MUTE
+		// Włączenie diody FUNC - informacja o usterce
 		LED_FUNC_PORT &= ~LED_FUNC_IO;
-		LED_MUTE_PORT &= ~LED_MUTE_IO;
 
 		// Wysłanie informacji o błędzie przez port szeregowy
-		if( ( FUSE_POS_PIN & FUSE_POS_IO ) && ( FUSE_NEG_PIN & FUSE_NEG_IO ) ) {
-			func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - check for voltages - all supply voltages error!\n\r" ) );
-		}
-		else {
-			if( FUSE_POS_PIN & FUSE_POS_IO )
-				func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - check for voltages - positive supply voltage error!\n\r" ) );
-			if( FUSE_NEG_PIN & FUSE_NEG_IO )
-				func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - check for voltages - negative supply voltage error!\n\r" ) );
-		}
-		func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - emergency off\n\r" ) );
+		func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - check for voltages - " ) );
+		if( ( FUSE_POS_PIN & FUSE_POS_IO ) && ( FUSE_NEG_PIN & FUSE_NEG_IO ) )
+			func_serial_sendstring( 1, PSTR( "all supply voltages error!\n\r" ) );
+		else if( FUSE_POS_PIN & FUSE_POS_IO )
+				func_serial_sendstring( 1, PSTR( "positive supply voltage error!\n\r" ) );
+			else
+				func_serial_sendstring( 1, PSTR( "negative supply voltage error!\n\r" ) );
 
 		// Zapętlenie do czasu odłączenia zasilania
-		func_serial_sendstring( 1, PSTR( "\e[1;31m\n\r\t Main error - remove plug from socket in wall!!!\n\r" ) );
 		while( 1 )
-			wdt_reset();
+			wdt_reset( );
 
 	}
 	func_serial_sendstring( u8service, PSTR( "\e[1;32mAnalog supply - check for voltages - all ok\n\r" ) );
 	#endif
 
+	#ifdef DEBUG
 	// Pomiar czasu propagacji transoptorów
 	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital to analog bridge - propagation time L to H - " ) );
 	IC_DATAW_PORT |= IC_DATAW_IO;
@@ -225,61 +229,70 @@ int16_t main ( void ) {
 	}
 	func_serial_h8( u8service, _u8trans_hl );
 	func_serial_sendstring( u8service, PSTR( "\n\r" ) );
+	#endif
 
 	// Sprawdzenie czy słuchawki zostały podłączone - jeśli nie to następuje reset programu
 	if( !( SWITCH_PHONES_PIN & SWITCH_PHONES_IO ) ) {
 		func_serial_sendstring( 1, PSTR( "\e[0;32mHeadphones - plug not connected, power off\n\r" ) );
 		REL_SUPPLY_PORT &= ~REL_SUPPLY_IO;
 		wait_ms( 1000 );
-		while(1);
+		while( 1 );
 	}
 
 	// Przywrócenie na wejściach cyfrowych potencjometrów stanu wysokiego (opis w dokumentacji WM8816)
-	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - set high state on all digital pins\n\r" ) );
+	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - set high state on all digital pins\n\r" ) );
 	IC_CLOCK_PORT |= IC_CLOCK_IO;
 	IC_DATAW_PORT |= IC_DATAW_IO;
 	IC_CSB_PORT |= IC_LEFT_IO | IC_RIGHT_IO;
 
+	// Odczyt z pamięci eeprom wartości wzmocnienia zapisanego podczas poprzedniego wyłączania (jeśli wartość wykracza poza zakres VOLUME_MIN ... VOLUME_SAFE to następuje korekta)
+	func_serial_sendstring( u8service, PSTR( "\e[1;32mMicrocontroler - read volume from eeprom\n\r" ) );
+	uint8_t u8_volume_ee = ee_read_byte( EEPROM_VOLUME );
+	if (u8_volume_ee > VOLUME_SAFE)
+		u8_volume_ee = VOLUME_SAFE;
+	if (u8_volume_ee < VOLUME_MIN)
+		u8_volume_ee = VOLUME_MIN;
+
 	// Wyłączenie wyciszenia sprzętowego potencjometrów - powoduje "klik" w słuchawkach i nie powinna być wykorzystywana
-	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - unmute\n\r" ) );
+	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - unmute\n\r" ) );
 	IC_MUTE_PORT |= IC_MUTE_IO;
 
-	// Stan gotowości - podłączenie słuchawek
+	// Podłączenie słuchawek
 	func_serial_sendstring( u8service, PSTR( "\e[1;32mHeadphones - on\n\r" ) );
 	REL_HEADPHONES_PORT &= ~REL_HEADPHONES_IO;
-	wait_ms( 400 );
+	wait_ms( 100 );
 
 	// Wyłączenie diody MUTE
 	LED_MUTE_PORT |= LED_MUTE_IO;
 
-	// Płynne narastanie wzmocnienia do wartości początkowej
-	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - ramp volume from " ) );
-	uint16_t u8_volume = VOLUME_MIN;
+	// Płynne narastanie wzmocnienia do zapisanej wartości w pamięci eeprom
+	func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - ramp volume from " ) );
+	uint8_t u8_volume = VOLUME_MIN;
 	func_serial_db( u8service, u8_volume );
 	func_serial_sendstring( u8service, PSTR( " to " ) );
-	func_serial_db( u8service, VOLUME_START );
+	func_serial_db( u8service, u8_volume_ee );
 	func_serial_sendstring( u8service, PSTR( "\n\r" ) );
-	while ( u8_volume < VOLUME_START ) {
+	while ( u8_volume < u8_volume_ee ) {
 
 		// Aktualizacja poziomu głośności, logarytmizacja regulacji
 		u8_volume++;
-		if ( u8_volume < 218 && u8_volume < VOLUME_START )
+		if ( u8_volume < 218 && u8_volume < u8_volume_ee )
 			u8_volume++;
-		if ( u8_volume < 206 && u8_volume < VOLUME_START )
+		if ( u8_volume < 206 && u8_volume < u8_volume_ee )
 			u8_volume++;
-		if ( u8_volume < 188 && u8_volume < VOLUME_START )
+		if ( u8_volume < 188 && u8_volume < u8_volume_ee )
 			u8_volume++;
-		if ( u8_volume < 164 && u8_volume < VOLUME_START )
+		if ( u8_volume < 164 && u8_volume < u8_volume_ee )
 			u8_volume++;
-		if ( u8_volume < 134 && u8_volume < VOLUME_START )
+		if ( u8_volume < 134 && u8_volume < u8_volume_ee )
 			u8_volume++;
-		if ( u8_volume < 98 && u8_volume < VOLUME_START )
+		if ( u8_volume < 98 && u8_volume < u8_volume_ee )
 			u8_volume++;
-		if ( u8_volume < 56 && u8_volume < VOLUME_START )
+		if ( u8_volume < 56 && u8_volume < u8_volume_ee )
 			u8_volume++;
-		if ( u8_volume < 8 && u8_volume < VOLUME_START )
+		if ( u8_volume < 8 && u8_volume < u8_volume_ee )
 			u8_volume++;
-		
+
 		// Czterokrotna aktualizacja poziomu głośności - opóźnienia transoptorów powodują błędy transmisji
 		func_ic_send( ( IC_WM8816_BOTH_CHANNEL_GAINS_WRITE << 8 ) | u8_volume );
 		func_ic_send( ( IC_WM8816_BOTH_CHANNEL_GAINS_WRITE << 8 ) | u8_volume );
@@ -295,12 +308,12 @@ int16_t main ( void ) {
 		func_ic_send( ( IC_WM8816_RIGHT_CHANNEL_GAIN_WRITE << 8 ) | u8_volume );
 		func_ic_send( ( IC_WM8816_LEFT_CHANNEL_GAIN_WRITE << 8 ) | u8_volume );
 		func_ic_send( ( IC_WM8816_RIGHT_CHANNEL_GAIN_WRITE << 8 ) | u8_volume );
-		
+
 		// Reset licznika nadzorcy
 		wdt_reset( );
 
 	}
-	
+
 	// Definicja zmiennych
 	uint8_t u8_switch_power_count = 255;
 	uint8_t u8_encoder = ( ( ENC_A_PIN & ENC_A_IO ) | ( ENC_A_PIN & ENC_A_IO ) ) >> 1;
@@ -355,9 +368,9 @@ int16_t main ( void ) {
 
 				// Wysłanie informacji do portu szeregowego
 				if( u8_volume == VOLUME_MUTE )
-					func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - mute\n\r" ) );
+					func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - mute\n\r" ) );
 				else{
-					func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - set " ) );
+					func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - set " ) );
 					func_serial_db( u8service, u8_volume );
 					func_serial_sendstring( u8service, PSTR( "\n\r" ) );
 				}
@@ -365,6 +378,7 @@ int16_t main ( void ) {
 				// Podwyższenie maksymalnej głośności podczas regulacji z wciśniętym przyciskiem FUNC
 				if ( u8_volume > u8_volume_max )
 					u8_volume_max = u8_volume;
+
 			}
 
 			// Obrot enkodera w lewo - zmniejszenie głośności
@@ -381,7 +395,7 @@ int16_t main ( void ) {
 					u8_volume = u8_volume_unmute + 1;
 					u8_volume_unmute = 0;
 				}
-				
+
 				// Aktualizacja poziomu głośności, logarytmizacja regulacji
 				u8_volume--;
 				if ( u8_volume_count && u8_volume > VOLUME_MIN ) {
@@ -406,14 +420,17 @@ int16_t main ( void ) {
 
 				// Wysłanie informacji do portu szeregowego
 				if( u8_volume == VOLUME_MUTE )
-					func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - mute\n\r" ) );
+					func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - mute\n\r" ) );
 				else{
-					func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - set " ) );
+					func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - set " ) );
 					func_serial_db( u8service, u8_volume );
 					func_serial_sendstring( u8service, PSTR( "\n\r" ) );
 				}
 
 			}
+			
+			// Zapis wartości wzmocnienia do zmiennej zapisywanej w pamięci eeprom podczas wyłączania
+			u8_volume_ee = u8_volume;
 
 		}
 
@@ -426,7 +443,7 @@ int16_t main ( void ) {
 				u8_volume = u8_volume_unmute;
 				u8_volume_unmute = 0;
 
-				func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - set " ) );
+				func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - set " ) );
 				func_serial_db( u8service, u8_volume );
 				func_serial_sendstring( u8service, PSTR( "\n\r" ) );
 
@@ -448,8 +465,8 @@ int16_t main ( void ) {
 				u8_volume_max = VOLUME_SAFE;
 
 				// Wysłanie informacji do portu szeregowego
-				func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital volume control - mute\n\r" ) );
-
+				func_serial_sendstring( u8service, PSTR( "\e[1;32mDigital potentiometer - mute\n\r" ) );
+				
 			}
 
 			// Aktualizacja wartości wzmocnienia
@@ -473,7 +490,7 @@ int16_t main ( void ) {
 		if( u8_volume_count ) {
 			u8_volume_count--;
 			func_ic_send( ( IC_WM8816_BOTH_CHANNEL_GAINS_WRITE << 8 ) | u8_volume );
-
+			
 			// Aktualizacja wzmocnienia osobno dla lewego i prawego kanału (IC_WM8816_BOTH_CHANNEL_GAINS_WRITE nie działa przy braku sygnału wejściowego)
 			func_ic_send( ( IC_WM8816_LEFT_CHANNEL_GAIN_WRITE << 8 ) | u8_volume );
 			func_ic_send( ( IC_WM8816_RIGHT_CHANNEL_GAIN_WRITE << 8 ) | u8_volume );
@@ -494,7 +511,7 @@ int16_t main ( void ) {
 			LED_MUTE_PORT &= ~LED_MUTE_IO;
 
 			// Sprzętowe wyciszenie potencjometrów
-			func_serial_sendstring( u8service, PSTR( "\e[0;32mDigital volume control - mute\n\r" ) );
+			func_serial_sendstring( u8service, PSTR( "\e[0;32mDigital potentiometer - mute\n\r" ) );
 			IC_MUTE_PORT &= ~IC_MUTE_IO;
 
 			// Odłączenie słuchawek
@@ -506,11 +523,12 @@ int16_t main ( void ) {
 			func_serial_sendstring( u8service, PSTR( "\e[0;32mAnalog supply - off\n\r" ) );
 			REL_SUPPLY_PORT &= ~REL_SUPPLY_IO;
 
-			// Wyłączenie przerwania licznika czasu pracy, zapis liczników do pamięci eeprom
+			// Wyłączenie przerwania licznika czasu pracy, zapis danych do pamięci eeprom
 			func_serial_sendstring( u8service, PSTR( "\e[0;32mMicrocontroler - save uptime to eeprom\n\r" ) );
 			TIMSK2 &= ~( 1 << TOIE2 );
 			ee_write_dword( EEPROM_UPTIME_DIGITAL, _u32uptime_digital );
 			ee_write_dword( EEPROM_UPTIME_ANALOG, _u32uptime_analog );
+			ee_write_byte( EEPROM_VOLUME, u8_volume_ee );
 
 			// Opóźnienie możliwości ponownego uruchomienia przed spadkiem napięcia na kondensatorach
 			func_serial_sendstring( u8service, PSTR( "\e[0;32mMicrocontroler - go to standby mode...\n\r" ) );
@@ -539,28 +557,25 @@ int16_t main ( void ) {
 			ee_write_dword( EEPROM_UPTIME_DIGITAL, _u32uptime_digital );
 			ee_write_dword( EEPROM_UPTIME_ANALOG, _u32uptime_analog );
 
-			// Wyłączenie diody POWER
+			// Wyłączenie diod POWER i MUTE
 			LED_POWER_PORT |= LED_POWER_IO;
+			LED_MUTE_PORT |= LED_MUTE_IO;
 
-			// Włączenie diod FUNC i MUTE
+			// Włączenie diody FUNC - informacja o usterce
 			LED_FUNC_PORT &= ~LED_FUNC_IO;
-			LED_MUTE_PORT &= ~LED_MUTE_IO;
 
 			// Wysłanie informacji o błędzie przez port szeregowy
-			if( ( FUSE_POS_PIN & FUSE_POS_IO ) && ( FUSE_NEG_PIN & FUSE_NEG_IO ) ) {
-				func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - all supply voltages error!\n\r" ) );
-			}
-			else {
-				if( FUSE_POS_PIN & FUSE_POS_IO )
-					func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - positive supply voltage error!\n\r" ) );
-				if( FUSE_NEG_PIN & FUSE_NEG_IO )
-					func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - negative supply voltage error!\n\r" ) );
-			}
+			func_serial_sendstring( 1, PSTR( "\e[1;31mAnalog supply - check for voltages - " ) );
+			if( ( FUSE_POS_PIN & FUSE_POS_IO ) && ( FUSE_NEG_PIN & FUSE_NEG_IO ) )
+				func_serial_sendstring( 1, PSTR( "all supply voltages error!\n\r" ) );
+			else if( FUSE_POS_PIN & FUSE_POS_IO )
+				func_serial_sendstring( 1, PSTR( "positive supply voltage error!\n\r" ) );
+			else
+				func_serial_sendstring( 1, PSTR( "negative supply voltage error!\n\r" ) );
 
-			// Zapętlenie do czasu odłączenia zasilania
-			func_serial_sendstring( 1, PSTR( "\e[1;31m\n\r\tMain error - remove plug from socket in wall!!!\n\r" ) );
+			// Zapętlenie do czasu odłączenia zasilania sieciowego
 			while( 1 )
-				wdt_reset();
+				wdt_reset( );
 
 		}
 
